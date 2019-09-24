@@ -5,6 +5,11 @@
 Completes the basic commands as listed under COMMANDS
 Completes the available HOSTNAMES for `sft ssh`
 
+## Prerequisites
+
+* pcregrep
+* ScaleFT client `sft`
+
 ## Usage
 
 `source /path/to/scaleft.bash`
