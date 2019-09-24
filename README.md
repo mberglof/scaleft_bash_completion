@@ -13,6 +13,6 @@ Completes the available HOSTNAMES for `sft ssh`
 
 ## Todo
 
-[] Better caching of HOSTNAMES in ssh_known_hosts format so it's available in all terminals.
-[] Completion of arguments for commands/sub-commands
+- [ ] Better caching of HOSTNAMES in ssh_known_hosts format so it's available in all terminals.
+- [ ] Completion of arguments for commands/sub-commands
 
