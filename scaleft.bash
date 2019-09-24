@@ -3,7 +3,6 @@
 
 # For each of the words, get options with pcregrep -o -- '--\w+-?(\w+)?'
 
-WORDS=$(sft -h | pcregrep -o '^     \w+(-?)(\w+)?' | sed -e 's/^     //' | tr "\n" " ")
 
 # Use global array for caching of hosts
 SERVERS=()
@@ -14,31 +13,54 @@ _sft_list_servers() {
   while IFS='' read -r line; do SERVERS+=("$line"); done < <(sft list-servers --columns hostname 2> /dev/null | tail -n +2)
 }
 
+_sft_options() {
+  return  
+}
+
 _sft_completions() {
-  local cur prev
+  local cur prev opts
+  COMPREPLY=()
 
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts=$(sft -h | pcregrep -o '^     \w+(-?)(\w+)?' | sed -e 's/^     //' | tr "\n" " ")
+
 
   case ${COMP_CWORD} in
     1)
-      COMPREPLY=($(compgen -W "$WORDS" -- "${cur}"))
+      if [[ ${cur} == -* ]] ; then
+        COMPREPLY=( $(compgen -W "$(sft -h | pcregrep -o -- '--\w+-?(\w+)?')" -- "${cur}") )
+        return 0
+      else
+        COMPREPLY=($(compgen -W "${opts}" -- "${cur}"))
+      fi
       ;;
     2)
+      if [[ ${cur} == -* ]] ; then
+            COMPREPLY=( $(compgen -W "$(sft ${prev} -h | pcregrep -o -- '--\w+-?(\w+)?')" -- "${cur}") )
+            return 0
+      fi
       case ${prev} in
         ssh)
           if [ ${#SERVERS} -lt 1 ]; then
             _sft_list_servers
           fi
           COMPREPLY=($(compgen -W "${SERVERS[*]}" -- "${cur}"))
+          return 0
           ;;
       esac
+      ;;
+    3)
+      COMPREPLY=($(compgen -W "$(sft ${prev} -h | pcregrep -o -- '--\w+-?(\w+)?')" -- "${cur}"))
+      ;;
   esac
 
   if [ "${#COMP_WORDS[@]}" != "2" ]; then
+    #COMPREPLY=($(compgen -W "$(sft ${prev} -h | pcregrep -o -- '--\w+-?(\w+)?')" -- "{cur}"))
     return
   fi
-  # COMPREPLY=($(compgen -W "$WORDS" -- "${COMP_WORDS[1]}"))
+  COMPREPLY=($(compgen -W "${opts}" -- "${cur}"))
+  return 0
 }
 
 complete -F _sft_completions sft
